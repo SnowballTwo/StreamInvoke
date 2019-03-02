@@ -18,67 +18,76 @@ typedef struct {
 } INativeStream;
 ```
 
-## Interface definition in managed code.
+## Interface definition in managed code. Member order and struct layout attribute are essential
 
 ```csharp
 public delegate Int32 Read( IntPtr ptr, Int32 length );
-public delegate Int32 Write( IntPtr ptr, Int32 length );
+
 public delegate Int64 Seek( Int64 position, SeekOrigin origin );
 
-public struct INativeStream
+public delegate Int32 Write( IntPtr ptr, Int32 length );
+
+[StructLayout( LayoutKind.Sequential )]
+public abstract class INativeStream
 {
-	public Read Read;		
-	public Write Write;
-	public Seek Seek;	
+	#region Fields
+
+	private Read _Read;
+	private Write _Write;
+	private Seek _Seek;
+
+	#endregion Fields
+
+	public INativeStream()
+	{
+		_Read = Read;
+		_Write = Write;
+		_Seek = Seek;
+	}
+
+	protected abstract int Read( IntPtr ptr, int length );
+
+	protected abstract int Write( IntPtr ptr, int length );
+
+	protected abstract long Seek( long offset, SeekOrigin origin );
 }
 ```
 
-## Creating a struct from a stream-wrapping class which can be obtained and invoked
+## Creating an implementation by wrapping a System.IO.Stream. StructLayout is essential!
 
 ```csharp
-public class NativeStream
-{  
-  private readonly Stream _Stream;
-  private INativeStream _Interface;
+[StructLayout( LayoutKind.Sequential )]
+public class NativeStream : INativeStream
+{
+	private readonly Stream _Stream;
 
-  public NativeStream( Stream stream )
-  {
-    _Stream = stream;
-    _Interface = new INativeStream
-    {
-      Read = Read,
-      Write = Write,
-      Seek = Seek
-    };
-  }
- 
-  public ref INativeStream Get()
-  {
-    return ref _Interface;
-  }
+	public NativeStream( Stream stream ) : base( )
+	{
+		_Stream = stream;
+	}
 
-  private int Read( IntPtr ptr, int length )
-  {
-    var buffer = new byte[ length ];
-    var result = _Stream.Read( buffer, 0, length );
-    Marshal.Copy( buffer, 0, ptr, result );
+	protected override int Read( IntPtr ptr, int length )
+	{
+		var buffer = new byte[ length ];
+		var result = _Stream.Read( buffer, 0, length );
+		Marshal.Copy( buffer, 0, ptr, result );
 
-    return result;
-  }
+		return result;
+	}
 
-  private long Seek( long offset, SeekOrigin origin )
-  {
-    return _Stream.Seek( offset, origin );
-  }
+	protected override int Write( IntPtr ptr, int length )
+	{
+		var buffer = new byte[ length ];
+		Marshal.Copy( ptr, buffer, 0, length );
+		_Stream.Write( buffer, 0, length );
 
-  private int Write( IntPtr ptr, int length )
-  {
-    var buffer = new byte[ length ];
-    Marshal.Copy( ptr, buffer, 0, length );
-    _Stream.Write( buffer, 0, length );
+		return length;
+	}
 
-    return length;
-  }  
+	protected override long Seek( long offset, SeekOrigin origin )
+	{
+		return _Stream.Seek( offset, origin );
+	}
 }
 ```
 
@@ -98,6 +107,6 @@ public extern static void Test( ref INativeStream pFunc );
 var testData = "Lorem ipsum dolor sit amet";
 var stream = new MemoryStream( Encoding.ASCII.GetBytes( testData ) );
 var nativeStream = new NativeStream( stream );
-Test( ref nativeStream.Get() );
+Test( nativeStream );
 
 ```
