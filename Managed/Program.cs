@@ -10,16 +10,16 @@ namespace Managed
 		#region Methods
 
 		[DllImport( @"Unmanaged.dll", CallingConvention = CallingConvention.Cdecl )]
-		public extern static void Test( ref INativeStream pFunc );
+		public extern static void Test( INativeStream pFunc );
 
 		private static void Main( string[] args )
 		{
-			var testData = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam";
+			var testData = "Lorem ipsum dolor sit amet";
 			var stream = new MemoryStream( Encoding.ASCII.GetBytes( testData ) );
 
 			var nativeStream = new NativeStream( stream );
 
-			Test( ref nativeStream.Get() );
+			Test( nativeStream );
 
 			Console.WriteLine( Encoding.ASCII.GetString( stream.ToArray() ) );
 

@@ -1,42 +1,24 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Managed
 {
-	public class NativeStream
+	[StructLayout( LayoutKind.Sequential )]
+	public class NativeStream : INativeStream
 	{
-		#region Fields
-
 		private readonly Stream _Stream;
-		private INativeStream _Interface;
 
-		#endregion Fields
-
-		#region Constructors
-
-		public NativeStream( Stream stream )
+		public NativeStream( Stream stream ) : base( )
 		{
-			_Interface = new INativeStream
-			{
-				Read = Read,
-				Write = Write,
-				Seek = Seek
-			};
-
 			_Stream = stream;
 		}
-
-		#endregion Constructors
-
-		#region Methods
-
-		public ref INativeStream Get()
-		{
-			return ref _Interface;
-		}
-
-		private int Read( IntPtr ptr, int length )
+			
+		protected override int Read( IntPtr ptr, int length )
 		{
 			var buffer = new byte[ length ];
 			var result = _Stream.Read( buffer, 0, length );
@@ -45,12 +27,7 @@ namespace Managed
 			return result;
 		}
 
-		private long Seek( long offset, SeekOrigin origin )
-		{
-			return _Stream.Seek( offset, origin );
-		}
-
-		private int Write( IntPtr ptr, int length )
+		protected override int Write( IntPtr ptr, int length )
 		{
 			var buffer = new byte[ length ];
 			Marshal.Copy( ptr, buffer, 0, length );
@@ -59,6 +36,9 @@ namespace Managed
 			return length;
 		}
 
-		#endregion Methods
+		protected override long Seek( long offset, SeekOrigin origin )
+		{
+			return _Stream.Seek( offset, origin );
+		}
 	}
 }
