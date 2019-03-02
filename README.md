@@ -1,6 +1,6 @@
 # StreamInvoke
 
-A small sample project to remind me how to create a stream to pass into native code with platform invoke
+This small sample is supposed to remind me of the correct invoke of structs with delegate members. In case someone ever reads this, please feel free to change this to a more elegant solution (besides COM-interfaces).
 
 ## Interface definition in native code, typedefs are omittable
 
