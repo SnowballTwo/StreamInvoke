@@ -21,6 +21,8 @@ namespace Managed
 
 			Test( ref nativeStream.Get() );
 
+			Console.WriteLine( Encoding.ASCII.GetString( stream.ToArray() ) );
+
 			Console.ReadLine();
 		}
 
