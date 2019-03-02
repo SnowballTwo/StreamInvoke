@@ -18,7 +18,7 @@ typedef struct {
 } INativeStream;
 ```
 
-## Interface definition in managed code. Member order and struct layout attribute are essential
+## Interface definition in managed code. Member order and struct layout attribute are essential.
 
 ```csharp
 public delegate Int32 Read( IntPtr ptr, Int32 length );
@@ -49,7 +49,7 @@ public abstract class INativeStream
 }
 ```
 
-## Creating an implementation by wrapping a System.IO.Stream. StructLayout is essential!
+## Creating an implementation by wrapping a System.IO.Stream. Struct layout attribute is essential.
 
 ```csharp
 [StructLayout( LayoutKind.Sequential )]
@@ -98,7 +98,7 @@ API_EXPORT void Test(INativeStream* nativeStream) {  ... }
 ```csharp
 
 [DllImport( @"Unmanaged.dll", CallingConvention = CallingConvention.Cdecl )]
-public extern static void Test( ref INativeStream pFunc );
+public extern static void Test( INativeStream pFunc );
 
 var testData = "Lorem ipsum dolor sit amet";
 var stream = new MemoryStream( Encoding.ASCII.GetBytes( testData ) );
