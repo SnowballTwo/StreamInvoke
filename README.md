@@ -30,14 +30,10 @@ public delegate Int32 Write( IntPtr ptr, Int32 length );
 [StructLayout( LayoutKind.Sequential )]
 public abstract class INativeStream
 {
-	#region Fields
-
 	private Read _Read;
 	private Write _Write;
 	private Seek _Seek;
-
-	#endregion Fields
-
+	
 	public INativeStream()
 	{
 		_Read = Read;
